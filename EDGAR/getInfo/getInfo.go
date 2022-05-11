@@ -2,6 +2,7 @@ package getInfo
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"net/http"
 )
 
@@ -21,8 +22,8 @@ func (c *CompanyCollection) FromJSON(jsonStr []byte) error {
 	return json.Unmarshal(jsonStr, &c.Collection)
 }
 
-func DownloadTickers() (map[string]CompanyTicker, error) {
-	ret := make(map[string]CompanyTicker)
+func DownloadTickers() (*CompanyCollection, error) {
+	var coll CompanyCollection
 
 	resp, err := http.Get(URL)
 	if err != nil {
@@ -31,10 +32,10 @@ func DownloadTickers() (map[string]CompanyTicker, error) {
 
 	defer resp.Body.Close()
 
-	var t CompanyTicker
-	if err := json.NewDecoder(resp.Body).Decode(&t); err != nil {
+	body, err := ioutil.ReadAll(resp.Body)
+	if err := coll.FromJSON(body); err != nil {
 		return nil, err
 	}
 
-	return ret, nil
+	return &coll, nil
 }
