@@ -14,6 +14,8 @@ type TickerInfo struct {
 	tickerCIK map[string]string
 }
 
+// example: https://data.sec.gov/api/xbrl/companyconcept/CIK##########/us-gaap/AccountsPayableCurrent.json
+
 func main() {
 	res, err := http.Get(getInfo.URL)
 	if err != nil {
