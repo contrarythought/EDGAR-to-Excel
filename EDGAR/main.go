@@ -3,11 +3,13 @@ package main
 import (
 	"EDGAR/getInfo"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
 )
+
+type TickerInfo struct {
+	tickerCIK map[string]getInfo.CompanyTicker
+}
 
 func main() {
 	res, err := http.Get(getInfo.URL)
@@ -17,24 +19,19 @@ func main() {
 
 	defer res.Body.Close()
 
-	f, err := os.Create("res.txt")
+	var c *getInfo.CompanyCollection
+
+	c, err = getInfo.DownloadTickers()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	defer f.Close()
-
-	bodyString, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		log.Fatalf("Failed to read into bodyString: %s", err)
-	}
-
-	var c getInfo.CompanyCollection
-	if err := c.FromJSON(bodyString); err != nil {
-		log.Fatal(err)
-	}
-
+	var t TickerInfo = TickerInfo{make(map[string]getInfo.CompanyTicker)}
 	for _, v := range c.Collection {
-		fmt.Fprintf(f, "%s %v\n", v.Ticker, v.CIK)
+		t.tickerCIK[v.Ticker] = v
 	}
+
+	fmt.Printf("%s\n", t.tickerCIK["BNED"].Title)
+	fmt.Printf("%d\n", t.tickerCIK["AAPL"].CIK)
+	fmt.Printf("%s\n", t.tickerCIK["ALOT"].Title)
 }
