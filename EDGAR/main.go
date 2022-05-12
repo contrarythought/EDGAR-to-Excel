@@ -1,11 +1,11 @@
 package main
 
 import (
-	"EDGAR/getInfo"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
-	"strconv"
+	"os"
 )
 
 const CIK_SIZE = 10
@@ -17,53 +17,67 @@ type TickerInfo struct {
 // example: https://data.sec.gov/api/xbrl/companyconcept/CIK##########/us-gaap/AccountsPayableCurrent.json
 
 func main() {
-	res, err := http.Get(getInfo.URL)
+	/*
+		res, err := http.Get(getInfo.URL)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		defer res.Body.Close()
+
+		var c *getInfo.CompanyCollection
+
+		c, err = getInfo.DownloadTickers()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		var t TickerInfo = TickerInfo{make(map[string]string)}
+		for _, v := range c.Collection {
+			cikStr := getInfo.CIKToString(v.CIK)
+			t.tickerCIK[v.Ticker] = cikStr
+		}
+
+		fmt.Printf("%s\n", t.tickerCIK["MU"])
+	*/
+
+	f, err := os.Create("res.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	defer res.Body.Close()
-
-	var c *getInfo.CompanyCollection
-
-	c, err = getInfo.DownloadTickers()
+	resp, err := getBodyStr("https://data.sec.gov/api/xbrl/companyconcept/CIK0000723125/us-gaap/OperatingIncomeLoss.json")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	var t TickerInfo = TickerInfo{make(map[string]string)}
-	for _, v := range c.Collection {
-		cikStr := CIKToString(v.CIK)
-		t.tickerCIK[v.Ticker] = cikStr
-	}
+	/*
+		resp, err = json.MarshalIndent(resp, "", "	")
+		if err != nil {
+			log.Fatal(err)
+		}
+	*/
+	fmt.Fprintf(f, "%s\n", resp)
 
-	fmt.Printf("%s\n", t.tickerCIK["BNED"])
-	fmt.Printf("%s\n", t.tickerCIK["AAPL"])
-	fmt.Printf("%s\n", t.tickerCIK["ALOT"])
 }
 
-// try with built-in functions?
-func CIKToString(CIK int) string {
-	var ret []byte
-	cikStr := strconv.Itoa(CIK)
-	cikLen := len(cikStr)
+func getBodyStr(URL string) ([]byte, error) {
+	req, err := http.NewRequest("GET", URL, nil)
+	if err != nil {
+		return nil, err
+	}
 
-	if cikLen < CIK_SIZE {
-		ret = make([]byte, CIK_SIZE)
-		offset := CIK_SIZE - cikLen
-		var i int
-		// prepend return CIK with '0' if cikLen < 10 
-		for i = 0; i < offset; i++ {
-			ret[i] = '0'
-		}
+	req.Header.Set("User-Agent", "athorpe624@gmail.com")
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
 
-		// copy over the rest of the CIK string
-		for j := 0 ; i < CIK_SIZE; i, j = i + 1, j + 1 {
-			ret[i] = cikStr[j]
-		}
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
 
-		return string(ret)
-	}	
-
-	return cikStr
+	return b, nil
 }
