@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"EDGAR/private"
 )
 
 const CIK_SIZE = 10
@@ -67,7 +68,7 @@ func getBodyStr(URL string) ([]byte, error) {
 		return nil, err
 	}
 
-	req.Header.Set("User-Agent", "athorpe624@gmail.com")
+	req.Header.Set("User-Agent", private.USER_AGENT)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, err
