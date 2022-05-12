@@ -50,7 +50,7 @@ func CIKToString(CIK int) string {
 }
 
 func DownloadTickers() (*CompanyCollection, error) {
-	var coll CompanyCollection
+	coll := &CompanyCollection{}
 
 	resp, err := http.Get(URL)
 	if err != nil {
@@ -64,5 +64,5 @@ func DownloadTickers() (*CompanyCollection, error) {
 		return nil, err
 	}
 
-	return &coll, nil
+	return coll, nil
 }
