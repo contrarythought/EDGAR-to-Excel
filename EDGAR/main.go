@@ -68,8 +68,7 @@ func getBodyStr(URL string) ([]byte, error) {
 	}
 
 	req.Header.Set("User-Agent", "athorpe624@gmail.com")
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
