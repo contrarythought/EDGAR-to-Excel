@@ -1,12 +1,12 @@
 package main
 
 import (
+	"EDGAR/private"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
-	"EDGAR/private"
 )
 
 const CIK_SIZE = 10
@@ -54,6 +54,13 @@ func main() {
 
 	/*
 		resp, err = json.MarshalIndent(resp, "", "	")
+		if err != nil {
+			log.Fatal(err)
+		}
+	*/
+
+	//resp, err = json.MarshalIndent(resp, "", "	")
+	/*
 		if err != nil {
 			log.Fatal(err)
 		}
