@@ -1,6 +1,14 @@
 package MU
 
-// "https://data.sec.gov/api/xbrl/companyconcept/CIK0000723125/us-gaap/OperatingIncomeLoss.json"
+import (
+	"EDGAR/private"
+	"encoding/json"
+	"io/ioutil"
+	"net/http"
+)
+
+const OI_URL = "https://data.sec.gov/api/xbrl/companyconcept/CIK0000723125/us-gaap/OperatingIncomeLoss.json"
+
 type OperatingIncomeLoss struct {
 	CIK         int    `json:"cik"`
 	Taxonomy    string `json:"taxonomy"`
@@ -25,6 +33,31 @@ type USD struct {
 	Frame string `json:"frame"`
 }
 
-func (oi *OperatingIncomeLoss) GetOperatingIncome() error {
-	
+type OICollection struct {
+	Collection map[string]OperatingIncomeLoss
+}
+
+func (oi *OICollection) GetOperatingIncome() error {
+	req, err := http.NewRequest("GET", OI_URL, nil)
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("User-Agent", private.USER_AGENT)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+
+	resp_str, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	if err := json.Unmarshal(resp_str, &oi.Collection); err != nil {
+		return err
+	}
+
+	return nil
 }
