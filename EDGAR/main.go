@@ -1,11 +1,10 @@
 package main
 
 import (
-	"EDGAR/private"
+	"EDGAR/MU"
+	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
-	"net/http"
 	"os"
 )
 
@@ -47,28 +46,24 @@ func main() {
 		log.Fatal(err)
 	}
 
-	resp, err := getBodyStr("https://data.sec.gov/api/xbrl/companyconcept/CIK0000723125/us-gaap/OperatingIncomeLoss.json")
+	var oi MU.OperatingIncomeLoss
+	if err := MU.GetOperatingIncome(&oi); err != nil {
+		log.Fatal(err)
+	}
+
+	s, err := json.MarshalIndent(oi, "", "	")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	/*
-		resp, err = json.MarshalIndent(resp, "", "	")
-		if err != nil {
-			log.Fatal(err)
-		}
-	*/
-
-	//resp, err = json.MarshalIndent(resp, "", "	")
-	/*
-		if err != nil {
-			log.Fatal(err)
-		}
-	*/
-	fmt.Fprintf(f, "%s\n", resp)
-
+	//fmt.Printf("%s\n", string(s))
+	_, err = fmt.Fprintf(f, "%s\n", s)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
+/*
 func getBodyStr(URL string) ([]byte, error) {
 	req, err := http.NewRequest("GET", URL, nil)
 	if err != nil {
@@ -88,3 +83,4 @@ func getBodyStr(URL string) ([]byte, error) {
 
 	return b, nil
 }
+*/
