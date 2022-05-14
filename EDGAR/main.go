@@ -57,11 +57,40 @@ func main() {
 	}
 
 	//fmt.Printf("%s\n", string(s))
+
 	_, err = fmt.Fprintf(f, "%s\n", s)
 	if err != nil {
 		log.Fatal(err)
 	}
+
 }
+
+/*
+func readUnits(units interface{}, f *os.File) {
+	switch unitType := units.(type) {
+	case float64:
+		//fmt.Println("float64: ", unitType)
+		fmt.Fprintln(f, "float64: ", unitType)
+	case string:
+		fmt.Fprintln(f, "String: ", unitType)
+	case []interface{}:
+		fmt.Fprintln(f, "is an array: ", unitType)
+		for i, u := range unitType {
+			fmt.Fprint(f, i, " ")
+			readUnits(u, f)
+		}
+	case map[string]interface{}:
+		fmt.Fprintln(f, "is an object: ", unitType)
+		for k, v := range unitType {
+			fmt.Fprint(f, k, " ")
+			readUnits(v, f)
+		}
+	default:
+		fmt.Fprintln(f, "unknown type: ", unitType)
+	}
+
+}
+*/
 
 /*
 func getBodyStr(URL string) ([]byte, error) {
