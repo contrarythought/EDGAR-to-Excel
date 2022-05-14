@@ -10,28 +10,26 @@ import (
 const OI_URL = "https://data.sec.gov/api/xbrl/companyconcept/CIK0000723125/us-gaap/OperatingIncomeLoss.json"
 
 type OperatingIncomeLoss struct {
-	CIK         json.Number `json:"cik"`
-	Taxonomy    string      `json:"taxonomy"`
-	Tag         string      `json:"tag"`
-	Label       string      `json:"label"`
-	Description string      `json:"description"`
-	EntityName  string      `json:"entityName"`
-	Units       interface{} `json:"units"`
+	CIK         int    `json:"cik"`
+	Taxonomy    string `json:"taxonomy"`
+	Tag         string `json:"tag"`
+	Label       string `json:"label"`
+	Description string `json:"description"`
+	EntityName  string `json:"entityName"`
+	Units       struct {
+		USD []struct {
+			Start string `json:"start"`
+			End   string `json:"end"`
+			Val   int    `json:"val"`
+			Accn  string `json:"accn"`
+			FY    int    `json:"fy"`
+			FP    string `json:"fp"`
+			Form  string `json:"form"`
+			Filed string `json:"filed"`
+			Frame string `json:"frame,omitempty"`
+		} `json:"USD"`
+	} `json:"units"`
 }
-
-/*
-type USD struct {
-	Start string      `json:"start"`
-	End   string      `json:"end"`
-	Val   json.Number `json:"val"`
-	Accn  string      `json:"accn"`
-	FY    json.Number `json:"fy"`
-	FP    string      `json:"fp"`
-	Form  string      `json:"form"`
-	Filed string      `json:"filed"`
-	Frame string      `json:"frame"`
-}
-*/
 
 func GetOperatingIncome(o *OperatingIncomeLoss) error {
 	req, err := http.NewRequest("GET", OI_URL, nil)
