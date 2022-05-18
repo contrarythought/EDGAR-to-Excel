@@ -44,7 +44,7 @@ func customGET(URL string, userAgent string) ([]byte, error) {
 	return: pointer to CompanyFacts struct for the inputted CIK, as well as an error
 */
 func GetFacts(CIK string) (*CompanyFacts, error) {
-	var ret = CompanyFacts{}
+	var ret CompanyFacts
 	url_to_send := COMPANYFACTS_BASE_URL + CIK + ".json"
 	body, err := customGET(url_to_send, private.USER_AGENT)
 	if err != nil {
