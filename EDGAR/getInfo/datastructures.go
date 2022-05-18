@@ -88,7 +88,13 @@ type CompanyFacts struct {
 	CIK        int    `json:"cik"`
 	EntityName string `json:"entityName"`
 	Facts      struct {
-		Dei    map[string]interface{} `json:"dei"`
-		UsGAAP map[string]interface{} `json:"us-gaap"`
+		Dei      map[string]interface{} `json:"dei"`
+		UsGAAP   map[string]interface{} `json:"us-gaap"`
+		IFRSFull map[string]interface{} `json:"ifrs-full"`
 	} `json:"facts"`
+}
+
+// TODO
+type CompanyConcept struct {
+
 }
