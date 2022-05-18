@@ -2,7 +2,6 @@ package main
 
 import (
 	"EDGAR/getInfo"
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -33,18 +32,29 @@ func main() {
 		log.Fatal(err)
 	}
 
-	tickSubmission, err := getInfo.GetSubmissions(tCIK.Collection[ticker])
+	tickSubmission, err := getInfo.GetFacts(tCIK.Collection[ticker])
 
-	jsonStr, err := json.MarshalIndent(tickSubmission, "", "	")
-	if err != nil {
-		log.Fatal(err)
-	}
+	//parseFacts(&tickSubmission.Facts.Dei)
+
+	/*
+		jsonStr, err := json.MarshalIndent(tickSubmission, "", "	")
+		if err != nil {
+			log.Fatal(err)
+		}
+	*/
 
 	f, err := os.Create("res.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer f.Close()
 
-	fmt.Fprintf(f, "%s\n", string(jsonStr))
+	for k := range tickSubmission.Facts.Dei {
+		fmt.Fprintf(f, "%s\n", k)
+	}
+
+	for k := range tickSubmission.Facts.UsGAAP {
+		fmt.Fprintf(f, "%s\n", k)
+	}
 }
 
