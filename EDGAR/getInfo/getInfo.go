@@ -3,16 +3,18 @@ package getInfo
 import (
 	"EDGAR/private"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 )
 
 const (
-	COMPANY_TICKERS_URL   = "https://www.sec.gov/files/company_tickers.json"
-	SUBMISSION_BASE_URL   = "https://data.sec.gov/submissions/CIK"
-	COMPANYFACTS_BASE_URL = "https://data.sec.gov/api/xbrl/companyfacts/CIK"
-	CIK_SIZE              = 10
+	COMPANY_TICKERS_URL     = "https://www.sec.gov/files/company_tickers.json"
+	SUBMISSION_BASE_URL     = "https://data.sec.gov/submissions/CIK"
+	COMPANYFACTS_BASE_URL   = "https://data.sec.gov/api/xbrl/companyfacts/CIK"
+	COMPANYCONCEPT_BASE_URL = "https://data.sec.gov/api/xbrl/companyconcept/CIK"
+	CIK_SIZE                = 10
 )
 
 func (c *CompanyCollection) FromJSON(jsonStr []byte) error {
@@ -46,6 +48,7 @@ func customGET(URL string, userAgent string) ([]byte, error) {
 func GetFacts(CIK string) (*CompanyFacts, error) {
 	var ret CompanyFacts
 	url_to_send := COMPANYFACTS_BASE_URL + CIK + ".json"
+	fmt.Printf("Sending %s\n", url_to_send)
 	body, err := customGET(url_to_send, private.USER_AGENT)
 	if err != nil {
 		return nil, err
@@ -78,6 +81,45 @@ func GetSubmissions(CIK string) (*Submissions, error) {
 	return &ret, nil
 }
 
+func getAccountingStd(facts *CompanyFacts) (string, error) {
+	if facts == nil {
+		return "", fmt.Errorf("empty CompanyFacts pointer")
+	}
+
+	if len(facts.Facts.UsGAAP) > 0 {
+		return "us-gaap", nil
+	} else if len(facts.Facts.IFRSFull) > 0 {
+		return "ifrs-full", nil
+	} else {
+		return "", fmt.Errorf("cannot validate accounting standards - check JSON file")
+	}
+}
+
+/*
+	input: CompanyFacts pointer to obtain the accounting standard, and the concept string that you want to view
+	output: CompanyConcept pointer containing concept info, and an error
+*/
+func GetConcept(facts *CompanyFacts, concept string) (*CompanyConcept, error) {
+	accounting, err := getAccountingStd(facts)
+	if err != nil {
+		return nil, err
+	}
+
+	url_to_send := COMPANYCONCEPT_BASE_URL + CIKToString(facts.CIK) + "/" + accounting + "/" + concept + ".json"
+	fmt.Printf("sending: %s\n", url_to_send)
+	body, err := customGET(url_to_send, private.USER_AGENT)
+	if err != nil {
+		return nil, err
+	}
+
+	var ret = CompanyConcept{}
+	if err = json.Unmarshal(body, &ret); err != nil {
+		return nil, err
+	}
+
+	return &ret, nil
+}
+
 func CIKToString(CIK int) string {
 	var ret []byte
 	cikStr := strconv.Itoa(CIK)
@@ -103,10 +145,6 @@ func CIKToString(CIK int) string {
 	return cikStr
 }
 
-func initTickerToCIK() *TickerToCIK {
-	return &TickerToCIK{make(map[string]string)}
-}
-
 func DownloadTickers() (*TickerToCIK, error) {
 	coll := &CompanyCollection{}
 
@@ -122,7 +160,7 @@ func DownloadTickers() (*TickerToCIK, error) {
 		return nil, err
 	}
 
-	ticker_to_CIK := initTickerToCIK()
+	ticker_to_CIK := &TickerToCIK{make(map[string]string)}
 	for _, v := range coll.Collection {
 		ticker_to_CIK.Collection[v.Ticker] = CIKToString(v.CIK)
 	}
