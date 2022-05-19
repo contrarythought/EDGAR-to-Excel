@@ -88,19 +88,36 @@ type CompanyFacts struct {
 	CIK        int    `json:"cik"`
 	EntityName string `json:"entityName"`
 	Facts      struct {
-		Dei      map[string]struct {
+		Dei map[string]struct {
 			Label interface{} `json:"label"`
 		} `json:"dei"`
-		UsGAAP   map[string]struct {
+		UsGAAP map[string]struct {
 			Label interface{} `json:"label"`
 		} `json:"us-gaap"`
 		IFRSFull map[string]struct {
 			Label interface{} `json:"label"`
 		} `json:"ifrs-full"`
-		
 	} `json:"facts"`
 }
 
-// TODO
 type CompanyConcept struct {
+	CIK         int    `json:"cik"`
+	Taxonomy    string `json:"taxonomy"`
+	Tag         string `json:"tag"`
+	Label       string `json:"label"`
+	Description string `json:"description"`
+	EntityName  string `json:"entityName"`
+	Units       struct {
+		USD []struct {
+			Start string `json:"start"`
+			End   string `json:"end"`
+			Val   int    `json:"val"`
+			Accn  string `json:"accn"`
+			FY    int    `json:"fy"`
+			FP    string `json:"fp"`
+			Form  string `json:"form"`
+			Filed string `json:"filed"`
+			Frame string `json:"frame"`
+		} `json:"USD"`
+	} `json:"Units"`
 }
