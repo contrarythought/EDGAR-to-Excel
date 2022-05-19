@@ -34,27 +34,28 @@ func main() {
 
 	tickSubmission, err := getInfo.GetFacts(tCIK.Collection[ticker])
 
-	//parseFacts(&tickSubmission.Facts.Dei)
-
-	/*
-		jsonStr, err := json.MarshalIndent(tickSubmission, "", "	")
-		if err != nil {
-			log.Fatal(err)
-		}
-	*/
-
 	f, err := os.Create("res.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer f.Close()
 
-	for k := range tickSubmission.Facts.Dei {
-		fmt.Fprintf(f, "%s\n", k)
+	conceptList, err := getInfo.ListOfConcepts(tickSubmission)
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	for k := range tickSubmission.Facts.UsGAAP {
-		fmt.Fprintf(f, "%s\n", k)
+	for i, s := range conceptList {
+		fmt.Println("[", i, "]", s)
 	}
+
+	con, err := getInfo.GetConcept(tickSubmission, "Revenues")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for i := range con.Units.USD {
+		fmt.Fprintf(f, "Start: %s End: %s --- %d\n", con.Units.USD[i].Start, con.Units.USD[i].End, con.Units.USD[i].Val)
+	}
+
 }
-
