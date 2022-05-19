@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 const (
@@ -81,7 +82,8 @@ func GetSubmissions(CIK string) (*Submissions, error) {
 	return &ret, nil
 }
 
-func getAccountingStd(facts *CompanyFacts) (string, error) {
+// returns the accounting standard associated with a company
+func GetAccountingStd(facts *CompanyFacts) (string, error) {
 	if facts == nil {
 		return "", fmt.Errorf("empty CompanyFacts pointer")
 	}
@@ -95,12 +97,37 @@ func getAccountingStd(facts *CompanyFacts) (string, error) {
 	}
 }
 
+func ListOfConcepts(facts *CompanyFacts) ([]string, error) {
+	if facts == nil {
+		return nil, fmt.Errorf("empty CompanyFacts pointer")
+	}
+
+	accounting, err := GetAccountingStd(facts)
+	if err != nil {
+		return nil, err
+	}
+
+	var ret []string
+
+	if strings.Compare(accounting, "us-gaap") == 0 {
+		for k := range facts.Facts.UsGAAP {
+			ret = append(ret, k)
+		}
+	} else if strings.Compare(accounting, "ifrs-full") == 0 {
+		for k := range facts.Facts.IFRSFull {
+			ret = append(ret, k)
+		}
+	}
+
+	return ret, nil
+}
+
 /*
 	input: CompanyFacts pointer to obtain the accounting standard, and the concept string that you want to view
 	output: CompanyConcept pointer containing concept info, and an error
 */
 func GetConcept(facts *CompanyFacts, concept string) (*CompanyConcept, error) {
-	accounting, err := getAccountingStd(facts)
+	accounting, err := GetAccountingStd(facts)
 	if err != nil {
 		return nil, err
 	}
@@ -120,6 +147,7 @@ func GetConcept(facts *CompanyFacts, concept string) (*CompanyConcept, error) {
 	return &ret, nil
 }
 
+// returns a string of the CIK in the form used in API requests
 func CIKToString(CIK int) string {
 	var ret []byte
 	cikStr := strconv.Itoa(CIK)
@@ -145,6 +173,7 @@ func CIKToString(CIK int) string {
 	return cikStr
 }
 
+// returns map of ticker --> CIK of all publicly traded companies in SEC's database
 func DownloadTickers() (*TickerToCIK, error) {
 	coll := &CompanyCollection{}
 
