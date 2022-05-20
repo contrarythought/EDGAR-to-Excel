@@ -51,10 +51,12 @@ func main() {
 		}
 
 		var c int
-		fmt.Println("Choose a concept (-1 to exit):")
+		fmt.Println("Choose a concept (-1 to exit, -2 for combined report):")
 		fmt.Scanf("%d\n", &c)
 		if c == -1 {
 			break
+		} else if c == -2 {
+			// TODO
 		}
 		fmt.Println("Building a report for: ", conceptList[c])
 
