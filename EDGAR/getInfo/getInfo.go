@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -120,6 +122,7 @@ func ListOfConcepts(facts *CompanyFacts) ([]string, error) {
 		}
 	}
 
+	sort.Strings(ret)
 	return ret, nil
 }
 
@@ -146,6 +149,45 @@ func GetConcept(facts *CompanyFacts, concept string) (*CompanyConcept, error) {
 	}
 
 	return &ret, nil
+}
+
+// build a report
+func BuildReport(facts *CompanyFacts, concept string) error {
+	con, err := GetConcept(facts, concept)
+	if err != nil {
+		return err
+	}
+
+	f, err := os.Create(concept + "Report.txt")
+	if err != nil {
+		return err
+	}
+
+	if len(con.Units.USD) > 0 {
+		for _, v := range con.Units.USD {
+			fmt.Fprintln(f, v.Form, " Start: ", v.Start, " End: ", v.End, " ----> ", v.Val)
+		}
+	} else if len(con.Units.EUR) > 0 {
+		for _, v := range con.Units.EUR {
+			fmt.Fprintln(f, v.Form, " Start: ", v.Start, " End: ", v.End, " ----> ", v.Val)
+		}
+	} else if len(con.Units.BRL) > 0 {
+		for _, v := range con.Units.BRL {
+			fmt.Fprintln(f, v.Form, " Start: ", v.Start, " End: ", v.End, " ----> ", v.Val)
+		}
+	} else if len(con.Units.Acre) > 0 {
+		for _, v := range con.Units.Acre {
+			fmt.Fprintln(f, v.Form, " End: ", v.End, " ----> ", v.Val)
+		}
+	} else if len(con.Units.Shares) > 0 {
+		for _, v := range con.Units.Shares {
+			fmt.Fprintln(f, v.Form, " Start: ", v.Start, " End: ", v.End, " ----> ", v.Val)
+		}
+	} else {
+		return fmt.Errorf("unsupported accounting standard")
+	}
+
+	return nil
 }
 
 // returns a string of the CIK in the form used in API requests
