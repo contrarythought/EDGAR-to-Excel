@@ -151,6 +151,30 @@ func GetConcept(facts *CompanyFacts, concept string) (*CompanyConcept, error) {
 	return &ret, nil
 }
 
+// TODO - build a report with multiple concepts
+func BuildCombinedReport(facts *CompanyFacts, concepts []string) error {
+	var filename string
+	for _, concept := range concepts {
+		filename = filename + concept
+	}
+
+	f, err := os.Create(filename + "Report.txt")
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	for _, concept := range concepts {
+		con, err := GetConcept(facts, concept)
+		if err != nil {
+			return err
+		}
+
+	}
+
+	return nil
+}
+
 // build a report
 func BuildReport(facts *CompanyFacts, concept string) error {
 	con, err := GetConcept(facts, concept)
@@ -162,6 +186,7 @@ func BuildReport(facts *CompanyFacts, concept string) error {
 	if err != nil {
 		return err
 	}
+	defer f.Close()
 
 	if len(con.Units.USD) > 0 {
 		for _, v := range con.Units.USD {
