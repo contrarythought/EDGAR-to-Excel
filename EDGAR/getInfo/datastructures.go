@@ -141,5 +141,26 @@ type CompanyConcept struct {
 			Filed string `json:"filed"`
 			Frame string `json:"frame"`
 		} `json:"BRL"`
+		Acre []struct {
+			End   string `json:"end"`
+			Val   int64  `json:"val"`
+			Accn  string `json:"accn"`
+			FY    int    `json:"fy"`
+			FP    string `json:"fp"`
+			Form  string `json:"form"`
+			Filed string `json:"filed"`
+			Frame string `json:"frame"`
+		} `json:"acre"`
+		Shares []struct {
+			Start string `json:"start"`
+			End   string `json:"end"`
+			Val   int64  `json:"val"`
+			Accn  string `json:"accn"`
+			FY    int    `json:"fy"`
+			FP    string `json:"fp"`
+			Form  string `json:"form"`
+			Filed string `json:"filed"`
+			Frame string `json:"frame"`
+		} `json:"shares"`
 	} `json:"units"`
 }
