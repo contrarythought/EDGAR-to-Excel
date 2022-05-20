@@ -101,17 +101,17 @@ type CompanyFacts struct {
 }
 
 type CompanyConcept struct {
-	CIK         int    `json:"cik"`
-	Taxonomy    string `json:"taxonomy"`
-	Tag         string `json:"tag"`
-	Label       string `json:"label"`
-	Description string `json:"description"`
-	EntityName  string `json:"entityName"`
+	CIK         int         `json:"cik"`
+	Taxonomy    string      `json:"taxonomy"`
+	Tag         string      `json:"tag"`
+	Label       interface{} `json:"label"`
+	Description interface{} `json:"description"`
+	EntityName  string      `json:"entityName"`
 	Units       struct {
 		USD []struct {
 			Start string `json:"start"`
 			End   string `json:"end"`
-			Val   int    `json:"val"`
+			Val   int64  `json:"val"`
 			Accn  string `json:"accn"`
 			FY    int    `json:"fy"`
 			FP    string `json:"fp"`
@@ -119,5 +119,16 @@ type CompanyConcept struct {
 			Filed string `json:"filed"`
 			Frame string `json:"frame"`
 		} `json:"USD"`
-	} `json:"Units"`
+		EUR []struct {
+			Start string `json:"start"`
+			End   string `json:"end"`
+			Val   int64  `json:"val"`
+			Accn  string `json:"accn"`
+			FY    int    `json:"fy"`
+			FP    string `json:"fp"`
+			Form  string `json:"form"`
+			Filed string `json:"filed"`
+			Frame string `json:"frame"`
+		} `json:"EUR"`
+	} `json:"units"`
 }
