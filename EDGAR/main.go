@@ -7,8 +7,6 @@ import (
 	"net/http"
 	"os"
 	"strings"
-	"sync"
-	"time"
 )
 
 // example: https://data.sec.gov/api/xbrl/companyconcept/CIK##########/us-gaap/AccountsPayableCurrent.json
@@ -47,16 +45,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	var w sync.WaitGroup
-	var cnt int
 	for {
-		if cnt > 5 {
-			fmt.Println("Pausing for 40 seconds to ease load on server")
-			time.Sleep(40 * time.Second)
-			cnt = 0
-			fmt.Println("Back again!")
-		}
-
 		for i := range conceptList {
 			fmt.Println("[", i, "] ", conceptList[i])
 		}
@@ -69,48 +58,12 @@ func main() {
 		}
 		fmt.Println("Building a report for: ", conceptList[c])
 
-		w.Add(1)
-		cnt++
-		fmt.Println("Reports being built: ", cnt)
-		go func(index *int) {
-			if err := BuildReport(tickSubmission, conceptList[*index]); err != nil {
-				log.Fatal(err)
-			}
+		if err := getInfo.BuildReport(tickSubmission, conceptList[c]); err != nil {
+			log.Fatal(err)
+		}
 
-			w.Done()
-			cnt--
-			fmt.Println(conceptList[*index], " report finished")
-		}(&c)
+		fmt.Println(conceptList[c], " report finished!")
 	}
-	w.Wait()
 
 	fmt.Println("Finished!")
-}
-
-func BuildReport(facts *getInfo.CompanyFacts, concept string) error {
-	con, err := getInfo.GetConcept(facts, concept)
-	if err != nil {
-		return err
-	}
-
-	f, err := os.Create(concept + "Report.txt")
-	if err != nil {
-		return err
-	}
-
-	if len(con.Units.USD) > 0 {
-		for _, v := range con.Units.USD {
-			fmt.Fprintln(f, v.Form, " Start: ", v.Start, " End: ", v.End,
-				" ----> ", v.Val)
-		}
-	} else if len(con.Units.EUR) > 0 {
-		for _, v := range con.Units.EUR {
-			fmt.Fprintln(f, v.Form, " Start: ", v.Start, " End: ", v.End,
-				" ----> ", v.Val)
-		}
-	} else {
-		return fmt.Errorf("unsupported accounting standard")
-	}
-
-	return nil
 }
