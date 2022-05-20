@@ -56,12 +56,26 @@ func main() {
 		if c == -1 {
 			break
 		} else if c == -2 {
-			// TODO
-		}
-		fmt.Println("Building a report for: ", conceptList[c])
+			var choices []string
 
-		if err := getInfo.BuildReport(tickSubmission, conceptList[c]); err != nil {
-			log.Fatal(err)
+			fmt.Println("Enter concepts you want for a combined report (-1 to build)")
+
+			var ch int
+			for i := 1; i != -1; i++ {
+				fmt.Scanf("%d\n", &ch)
+				choices = append(choices, conceptList[ch])
+			}
+
+			if err = getInfo.BuildCombinedReport(tickSubmission, choices); err != nil {
+				log.Fatal(err)
+			}
+
+		} else {
+			fmt.Println("Building a report for: ", conceptList[c])
+
+			if err = getInfo.BuildReport(tickSubmission, conceptList[c]); err != nil {
+				log.Fatal(err)
+			}
 		}
 
 		fmt.Println(conceptList[c], " report finished!")
