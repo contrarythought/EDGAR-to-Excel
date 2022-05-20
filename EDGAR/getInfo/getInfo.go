@@ -107,6 +107,7 @@ func ListOfConcepts(facts *CompanyFacts) ([]string, error) {
 		return nil, err
 	}
 
+	//var ret = make(map[int]string)
 	var ret []string
 
 	if strings.Compare(accounting, "us-gaap") == 0 {
