@@ -78,6 +78,7 @@ func main() {
 			}
 
 			w.Done()
+			cnt--
 			fmt.Println(conceptList[*index], " report finished")
 		}(&c)
 	}
@@ -110,6 +111,6 @@ func BuildReport(facts *getInfo.CompanyFacts, concept string) error {
 	} else {
 		return fmt.Errorf("unsupported accounting standard")
 	}
- 
+
 	return nil
 }
