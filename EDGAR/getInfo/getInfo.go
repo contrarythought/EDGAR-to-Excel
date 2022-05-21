@@ -151,17 +151,44 @@ func GetConcept(facts *CompanyFacts, concept string) (*CompanyConcept, error) {
 	return &ret, nil
 }
 
-// TODO
+// TODO - fix formatting
 func printConcept(con *CompanyConcept, f *os.File) {
 	if len(con.Units.USD) > 0 {
-		fmt.Fprint(f, con.Tag, " > ")
+		fmt.Fprint(f, con.Tag, ":\n")
 		for _, v := range con.Units.USD {
-
+			fmt.Fprint(f, v.Form, " ", v.Start, " - ", v.End, " [", v.Val, "] | ")
 		}
+		fmt.Fprintln(f)
+	} else if len(con.Units.EUR) > 0 {
+		fmt.Fprint(f, con.Tag, ":\n")
+		for _, v := range con.Units.USD {
+			fmt.Fprint(f, v.Form, " ", v.Start, " - ", v.End, " [", v.Val, "] | ")
+		}
+		fmt.Fprintln(f)
+	} else if len(con.Units.BRL) > 0 {
+		fmt.Fprint(f, con.Tag, ":\n")
+		for _, v := range con.Units.USD {
+			fmt.Fprint(f, v.Form, " ", v.Start, " - ", v.End, " [", v.Val, "] | ")
+		}
+		fmt.Fprintln(f)
+	} else if len(con.Units.Acre) > 0 {
+		fmt.Fprint(f, con.Tag, ":\n")
+		for _, v := range con.Units.Acre {
+			fmt.Fprintln(f, v.Form, " End: ", v.End, " ----> ", v.Val)
+		}
+		fmt.Fprintln(f)
+	} else if len(con.Units.Shares) > 0 {
+		fmt.Fprint(f, con.Tag, ":\n")
+		for _, v := range con.Units.USD {
+			fmt.Fprint(f, v.Form, " ", v.Start, " - ", v.End, " [", v.Val, "] | ")
+		}
+		fmt.Fprintln(f)
+	} else {
+		fmt.Println("unsupported acconting standard")
 	}
 }
 
-// TODO - build a report with multiple concepts
+// build a report with multiple concepts
 func BuildCombinedReport(facts *CompanyFacts, concepts []string) error {
 	var filename string
 	for _, concept := range concepts {
@@ -198,29 +225,7 @@ func BuildReport(facts *CompanyFacts, concept string) error {
 	}
 	defer f.Close()
 
-	if len(con.Units.USD) > 0 {
-		for _, v := range con.Units.USD {
-			fmt.Fprintln(f, v.Form, " Start: ", v.Start, " End: ", v.End, " ----> ", v.Val)
-		}
-	} else if len(con.Units.EUR) > 0 {
-		for _, v := range con.Units.EUR {
-			fmt.Fprintln(f, v.Form, " Start: ", v.Start, " End: ", v.End, " ----> ", v.Val)
-		}
-	} else if len(con.Units.BRL) > 0 {
-		for _, v := range con.Units.BRL {
-			fmt.Fprintln(f, v.Form, " Start: ", v.Start, " End: ", v.End, " ----> ", v.Val)
-		}
-	} else if len(con.Units.Acre) > 0 {
-		for _, v := range con.Units.Acre {
-			fmt.Fprintln(f, v.Form, " End: ", v.End, " ----> ", v.Val)
-		}
-	} else if len(con.Units.Shares) > 0 {
-		for _, v := range con.Units.Shares {
-			fmt.Fprintln(f, v.Form, " Start: ", v.Start, " End: ", v.End, " ----> ", v.Val)
-		}
-	} else {
-		return fmt.Errorf("unsupported accounting standard")
-	}
+	printConcept(con, f)
 
 	return nil
 }
