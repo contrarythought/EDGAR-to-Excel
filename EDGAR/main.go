@@ -61,9 +61,10 @@ func main() {
 			fmt.Println("Enter concepts you want for a combined report (-1 to build)")
 
 			var ch int
-			for i := 1; i != -1; i++ {
-				fmt.Scanf("%d\n", &ch)
+			fmt.Scanf("%d\n", &ch)
+			for ch != -1 {
 				choices = append(choices, conceptList[ch])
+				fmt.Scanf("%d\n", &ch)
 			}
 
 			if err = getInfo.BuildCombinedReport(tickSubmission, choices); err != nil {
@@ -78,7 +79,7 @@ func main() {
 			}
 		}
 
-		fmt.Println(conceptList[c], " report finished!")
+		fmt.Println("report finished!")
 	}
 
 	fmt.Println("Finished!")
