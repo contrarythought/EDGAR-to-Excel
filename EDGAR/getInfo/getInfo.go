@@ -151,6 +151,16 @@ func GetConcept(facts *CompanyFacts, concept string) (*CompanyConcept, error) {
 	return &ret, nil
 }
 
+// TODO
+func printConcept(con *CompanyConcept, f *os.File) {
+	if len(con.Units.USD) > 0 {
+		fmt.Fprint(f, con.Tag, " > ")
+		for _, v := range con.Units.USD {
+
+		}
+	}
+}
+
 // TODO - build a report with multiple concepts
 func BuildCombinedReport(facts *CompanyFacts, concepts []string) error {
 	var filename string
@@ -169,7 +179,7 @@ func BuildCombinedReport(facts *CompanyFacts, concepts []string) error {
 		if err != nil {
 			return err
 		}
-
+		printConcept(con, f)
 	}
 
 	return nil
