@@ -5,11 +5,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
-	"os"
 	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/360EntSecGroup-Skylar/excelize"
 )
 
 const (
@@ -151,41 +153,44 @@ func GetConcept(facts *CompanyFacts, concept string) (*CompanyConcept, error) {
 	return &ret, nil
 }
 
-// TODO - fix formatting
-func printConcept(con *CompanyConcept, f *os.File) {
-	if len(con.Units.USD) > 0 {
-		fmt.Fprint(f, con.Tag, ":\n")
-		for _, v := range con.Units.USD {
-			fmt.Fprint(f, v.Form, " ", v.Start, " - ", v.End, " [", v.Val, "] | ")
-		}
-		fmt.Fprintln(f)
-	} else if len(con.Units.EUR) > 0 {
-		fmt.Fprint(f, con.Tag, ":\n")
-		for _, v := range con.Units.USD {
-			fmt.Fprint(f, v.Form, " ", v.Start, " - ", v.End, " [", v.Val, "] | ")
-		}
-		fmt.Fprintln(f)
-	} else if len(con.Units.BRL) > 0 {
-		fmt.Fprint(f, con.Tag, ":\n")
-		for _, v := range con.Units.USD {
-			fmt.Fprint(f, v.Form, " ", v.Start, " - ", v.End, " [", v.Val, "] | ")
-		}
-		fmt.Fprintln(f)
-	} else if len(con.Units.Acre) > 0 {
-		fmt.Fprint(f, con.Tag, ":\n")
-		for _, v := range con.Units.Acre {
-			fmt.Fprintln(f, v.Form, " End: ", v.End, " ----> ", v.Val)
-		}
-		fmt.Fprintln(f)
-	} else if len(con.Units.Shares) > 0 {
-		fmt.Fprint(f, con.Tag, ":\n")
-		for _, v := range con.Units.USD {
-			fmt.Fprint(f, v.Form, " ", v.Start, " - ", v.End, " [", v.Val, "] | ")
-		}
-		fmt.Fprintln(f)
-	} else {
-		fmt.Println("unsupported acconting standard")
+func incrRow(axis string) (string, error) {
+	var ret string
+	incr_letter := strconv.Itoa(int(axis[0]) + 1)
+	incr_num, err := strconv.Atoi(string(axis[1]))
+	if err != nil {
+		return "", err
 	}
+	incr_num++
+	ret = incr_letter + strconv.Itoa(incr_num)
+	return ret, nil
+}
+
+// TODO - fix formatting
+func printConcept(con *CompanyConcept, f *excelize.File, filename string) error {
+	rowIter := 1
+	axis := "A" + strconv.Itoa(rowIter)
+	var err error
+	if len(con.Units.USD) > 0 {
+		for eIter, i := 1, 0; i < len(con.Units.USD); i, eIter = i+1, eIter+1 {
+			f.SetCellValue("Sheet1", axis, con.Units.USD[i].End)
+			axis, err = incrRow(axis)
+			if err != nil {
+				return err
+			}
+		}
+	} else if len(con.Units.EUR) > 0 {
+
+	} else if len(con.Units.BRL) > 0 {
+
+	} else if len(con.Units.Acre) > 0 {
+
+	} else if len(con.Units.Shares) > 0 {
+
+	} else {
+		fmt.Println("unsupported accounting standard")
+	}
+
+	return nil
 }
 
 // build a report with multiple concepts
@@ -194,19 +199,25 @@ func BuildCombinedReport(facts *CompanyFacts, concepts []string) error {
 	for _, concept := range concepts {
 		filename = filename + concept
 	}
+	filename = filename + "Report.xlsx"
+	/*
+		f, err := os.Create(filename + "Report.txt")
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+	*/
 
-	f, err := os.Create(filename + "Report.txt")
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
+	excelFile := excelize.NewFile()
 	for _, concept := range concepts {
 		con, err := GetConcept(facts, concept)
 		if err != nil {
 			return err
 		}
-		printConcept(con, f)
+		err = printConcept(con, excelFile, filename)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	return nil
@@ -219,13 +230,20 @@ func BuildReport(facts *CompanyFacts, concept string) error {
 		return err
 	}
 
-	f, err := os.Create(concept + "Report.txt")
-	if err != nil {
-		return err
-	}
-	defer f.Close()
+	filename := concept + "Report.xlsx"
+	/*
+		f, err := os.Create(concept + "Report.txt")
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+	*/
 
-	printConcept(con, f)
+	excelFile := excelize.NewFile()
+	err = printConcept(con, excelFile, filename)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	return nil
 }
