@@ -156,12 +156,18 @@ func GetConcept(facts *CompanyFacts, concept string) (*CompanyConcept, error) {
 func incrRow(axis string) (string, error) {
 	var ret string
 	incr_letter := strconv.Itoa(int(axis[0]) + 1)
+	ret = incr_letter + string(axis[1])
+	return ret, nil
+}
+
+func incrCol(axis string) (string, error) {
+	var ret string
 	incr_num, err := strconv.Atoi(string(axis[1]))
 	if err != nil {
 		return "", err
 	}
 	incr_num++
-	ret = incr_letter + strconv.Itoa(incr_num)
+	ret = string(axis[0]) + strconv.Itoa(incr_num)
 	return ret, nil
 }
 
@@ -173,7 +179,7 @@ func printConcept(con *CompanyConcept, f *excelize.File, filename string) error 
 	if len(con.Units.USD) > 0 {
 		for eIter, i := 1, 0; i < len(con.Units.USD); i, eIter = i+1, eIter+1 {
 			f.SetCellValue("Sheet1", axis, con.Units.USD[i].End)
-			axis, err = incrRow(axis)
+			axis, err = incrCol(axis)
 			if err != nil {
 				return err
 			}
