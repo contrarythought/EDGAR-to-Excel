@@ -101,6 +101,7 @@ func GetAccountingStd(facts *CompanyFacts) (string, error) {
 	}
 }
 
+// returns a string array of the concepts associated with a company
 func ListOfConcepts(facts *CompanyFacts) ([]string, error) {
 	if facts == nil {
 		return nil, fmt.Errorf("empty CompanyFacts pointer")
@@ -111,7 +112,6 @@ func ListOfConcepts(facts *CompanyFacts) ([]string, error) {
 		return nil, err
 	}
 
-	//var ret = make(map[int]string)
 	var ret []string
 
 	if strings.Compare(accounting, "us-gaap") == 0 {
@@ -153,21 +153,37 @@ func GetConcept(facts *CompanyFacts, concept string) (*CompanyConcept, error) {
 	return &ret, nil
 }
 
-func incrRow(axis string) (string, error) {
+// increments row in an excel worksheet
+func incrRow(axis string, index int) (string, error) {
 	var ret string
-	incr_letter := strconv.Itoa(int(axis[0]) + 1)
-	ret = incr_letter + string(axis[1])
+	ret = "A" + strconv.Itoa(index)
 	return ret, nil
 }
 
-func incrCol(axis string) (string, error) {
-	var ret string
-	incr_num, err := strconv.Atoi(string(axis[1]))
-	if err != nil {
-		return "", err
+// FIXME
+func incrCol(axis string, index int) (string, error) {
+	ret := ""
+
+	letter_portion := axis[:len(axis)-1]
+	old_letters := ""
+	len_letter_portion := len(letter_portion)
+	if len_letter_portion > 1 {
+		old_letters = letter_portion[:len(letter_portion)-1]
+	} else {
+		old_letters = letter_portion
 	}
-	incr_num++
-	ret = string(axis[0]) + strconv.Itoa(incr_num)
+
+	last_letter := ""
+	new_letter := ""
+	if index%26 == 0 {
+		new_letter = "A"
+	} else if len_letter_portion > 1 {
+		last_letter = string(letter_portion[len(letter_portion)-1] + 1)
+	} else {
+		old_letters = string(old_letters[0] + 1)
+	}
+
+	ret = old_letters + last_letter + new_letter + string(axis[len(axis)-1])
 	return ret, nil
 }
 
@@ -175,11 +191,45 @@ func incrCol(axis string) (string, error) {
 func printConcept(con *CompanyConcept, f *excelize.File, filename string) error {
 	rowIter := 1
 	axis := "A" + strconv.Itoa(rowIter)
+	fmt.Println("Starting axis: ", axis)
 	var err error
 	if len(con.Units.USD) > 0 {
-		for eIter, i := 1, 0; i < len(con.Units.USD); i, eIter = i+1, eIter+1 {
-			f.SetCellValue("Sheet1", axis, con.Units.USD[i].End)
-			axis, err = incrCol(axis)
+		// print out the form type
+		for i := 0; i < len(con.Units.USD); i++ {
+			f.SetCellValue("Sheet1", axis, con.Units.USD[i].Form)
+			// increment the col
+			axis, err = incrCol(axis, i+1)
+			fmt.Println("Axis: ", axis)
+			if err != nil {
+				return err
+			}
+		}
+		// go to the next row
+		rowIter++
+		axis, err = incrRow(axis, rowIter)
+		if err != nil {
+			return err
+		}
+		// print out the date range
+		for i := 0; i < len(con.Units.USD); i++ {
+			date_range := con.Units.USD[i].Start + " - " + con.Units.USD[i].End
+			f.SetCellValue("Sheet1", axis, date_range)
+			axis, err = incrCol(axis, i+1)
+			if err != nil {
+				return err
+			}
+			fmt.Println("Axis: ", axis)
+		}
+		// go to the next row
+		rowIter++
+		axis, err = incrRow(axis, rowIter)
+		if err != nil {
+			return err
+		}
+		// print out the values
+		for i := 0; i < len(con.Units.USD); i++ {
+			f.SetCellValue("Sheet1", axis, con.Units.USD[i].Val)
+			axis, err = incrCol(axis, i+1)
 			if err != nil {
 				return err
 			}
@@ -193,9 +243,12 @@ func printConcept(con *CompanyConcept, f *excelize.File, filename string) error 
 	} else if len(con.Units.Shares) > 0 {
 
 	} else {
-		fmt.Println("unsupported accounting standard")
+		fmt.Println("unsupported unit type")
 	}
 
+	if err = f.SaveAs(filename); err != nil {
+		return err
+	}
 	return nil
 }
 
