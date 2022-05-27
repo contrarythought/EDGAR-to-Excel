@@ -154,85 +154,48 @@ func GetConcept(facts *CompanyFacts, concept string) (*CompanyConcept, error) {
 }
 
 // increments row in an excel worksheet
-func incrRow(axis string, index int) (string, error) {
-	var ret string
-	ret = "A" + strconv.Itoa(index)
-	return ret, nil
+func incrRow(index int) string {
+	ret := "A" + strconv.Itoa(index+1)
+	return ret
 }
 
-// FIXME
-func incrCol(axis string, index int) (string, error) {
+// returns col string
+func getCol(alpha_idx int, row_idx int) string {
 	ret := ""
-
-	letter_portion := axis[:len(axis)-1]
-	old_letters := ""
-	len_letter_portion := len(letter_portion)
-	if len_letter_portion > 1 {
-		old_letters = letter_portion[:len(letter_portion)-1]
-	} else {
-		old_letters = letter_portion
+	for ; alpha_idx >= 0; alpha_idx = (alpha_idx / 26) - 1 {
+		ret = string(rune(('A' + alpha_idx%26))) + ret
 	}
-
-	last_letter := ""
-	new_letter := ""
-	if index%26 == 0 {
-		new_letter = "A"
-	} else if len_letter_portion > 1 {
-		last_letter = string(letter_portion[len(letter_portion)-1] + 1)
-	} else {
-		old_letters = string(old_letters[0] + 1)
-	}
-
-	ret = old_letters + last_letter + new_letter + string(axis[len(axis)-1])
-	return ret, nil
+	return ret + strconv.Itoa(row_idx+1)
 }
 
-// TODO - fix formatting
-func printConcept(con *CompanyConcept, f *excelize.File, filename string) error {
-	rowIter := 1
-	axis := "A" + strconv.Itoa(rowIter)
-	fmt.Println("Starting axis: ", axis)
+// TODO
+func printConcept(con *CompanyConcept, f *excelize.File, filename string, rowIter int) (int, error) {
+	axis := ""
 	var err error
 	if len(con.Units.USD) > 0 {
 		// print out the form type
 		for i := 0; i < len(con.Units.USD); i++ {
+			axis = getCol(i, rowIter)
 			f.SetCellValue("Sheet1", axis, con.Units.USD[i].Form)
-			// increment the col
-			axis, err = incrCol(axis, i+1)
 			fmt.Println("Axis: ", axis)
-			if err != nil {
-				return err
-			}
 		}
 		// go to the next row
 		rowIter++
-		axis, err = incrRow(axis, rowIter)
-		if err != nil {
-			return err
-		}
+		axis = incrRow(rowIter)
 		// print out the date range
 		for i := 0; i < len(con.Units.USD); i++ {
+			axis = getCol(i, rowIter)
 			date_range := con.Units.USD[i].Start + " - " + con.Units.USD[i].End
 			f.SetCellValue("Sheet1", axis, date_range)
-			axis, err = incrCol(axis, i+1)
-			if err != nil {
-				return err
-			}
 			fmt.Println("Axis: ", axis)
 		}
 		// go to the next row
 		rowIter++
-		axis, err = incrRow(axis, rowIter)
-		if err != nil {
-			return err
-		}
+		axis = incrRow(rowIter)
 		// print out the values
 		for i := 0; i < len(con.Units.USD); i++ {
+			axis = getCol(i, rowIter)
 			f.SetCellValue("Sheet1", axis, con.Units.USD[i].Val)
-			axis, err = incrCol(axis, i+1)
-			if err != nil {
-				return err
-			}
 		}
 	} else if len(con.Units.EUR) > 0 {
 
@@ -247,9 +210,11 @@ func printConcept(con *CompanyConcept, f *excelize.File, filename string) error 
 	}
 
 	if err = f.SaveAs(filename); err != nil {
-		return err
+		return -1, err
 	}
-	return nil
+
+	rowIter++
+	return rowIter, nil
 }
 
 // build a report with multiple concepts
@@ -268,12 +233,13 @@ func BuildCombinedReport(facts *CompanyFacts, concepts []string) error {
 	*/
 
 	excelFile := excelize.NewFile()
+	rowIter := 0
 	for _, concept := range concepts {
 		con, err := GetConcept(facts, concept)
 		if err != nil {
 			return err
 		}
-		err = printConcept(con, excelFile, filename)
+		rowIter, err = printConcept(con, excelFile, filename, rowIter)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -299,7 +265,7 @@ func BuildReport(facts *CompanyFacts, concept string) error {
 	*/
 
 	excelFile := excelize.NewFile()
-	err = printConcept(con, excelFile, filename)
+	_, err = printConcept(con, excelFile, filename, 0)
 	if err != nil {
 		log.Fatal(err)
 	}
