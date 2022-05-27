@@ -159,7 +159,7 @@ func incrRow(index int) string {
 	return ret
 }
 
-// returns col string
+// returns col string - thank you https://stackoverflow.com/questions/3302857/algorithm-to-get-the-excel-like-column-name-of-a-number
 func getCol(alpha_idx int, row_idx int) string {
 	ret := ""
 	for ; alpha_idx >= 0; alpha_idx = (alpha_idx / 26) - 1 {
