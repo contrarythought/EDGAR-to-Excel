@@ -1,6 +1,9 @@
 package getInfo
 
-import "time"
+import (
+	"log"
+	"time"
+)
 
 type CompanyTicker struct {
 	CIK    int    `json:"cik_str"`
@@ -108,59 +111,147 @@ type CompanyConcept struct {
 	Description interface{} `json:"description"`
 	EntityName  string      `json:"entityName"`
 	Units       struct {
-		USD []struct {
-			Start string `json:"start"`
-			End   string `json:"end"`
-			Val   int64  `json:"val"`
-			Accn  string `json:"accn"`
-			FY    int    `json:"fy"`
-			FP    string `json:"fp"`
-			Form  string `json:"form"`
-			Filed string `json:"filed"`
-			Frame string `json:"frame"`
-		} `json:"USD"`
-		EUR []struct {
-			Start string `json:"start"`
-			End   string `json:"end"`
-			Val   int64  `json:"val"`
-			Accn  string `json:"accn"`
-			FY    int    `json:"fy"`
-			FP    string `json:"fp"`
-			Form  string `json:"form"`
-			Filed string `json:"filed"`
-			Frame string `json:"frame"`
-		} `json:"EUR"`
-		BRL []struct {
-			Start string `json:"start"`
-			End   string `json:"end"`
-			Val   int64  `json:"val"`
-			Accn  string `json:"accn"`
-			FY    int    `json:"fy"`
-			FP    string `json:"fp"`
-			Form  string `json:"form"`
-			Filed string `json:"filed"`
-			Frame string `json:"frame"`
-		} `json:"BRL"`
-		Acre []struct {
-			End   string `json:"end"`
-			Val   int64  `json:"val"`
-			Accn  string `json:"accn"`
-			FY    int    `json:"fy"`
-			FP    string `json:"fp"`
-			Form  string `json:"form"`
-			Filed string `json:"filed"`
-			Frame string `json:"frame"`
-		} `json:"acre"`
-		Shares []struct {
-			Start string `json:"start"`
-			End   string `json:"end"`
-			Val   int64  `json:"val"`
-			Accn  string `json:"accn"`
-			FY    int    `json:"fy"`
-			FP    string `json:"fp"`
-			Form  string `json:"form"`
-			Filed string `json:"filed"`
-			Frame string `json:"frame"`
-		} `json:"shares"`
+		USD    []USD    `json:"USD"`
+		EUR    []EUR    `json:"EUR"`
+		BRL    []BRL    `json:"BRL"`
+		Acre   []Acre   `json:"acre"`
+		Shares []Shares `json:"shares"`
 	} `json:"units"`
 }
+
+type USD struct {
+	Start string `json:"start"`
+	End   string `json:"end"`
+	Val   int64  `json:"val"`
+	Accn  string `json:"accn"`
+	FY    int    `json:"fy"`
+	FP    string `json:"fp"`
+	Form  string `json:"form"`
+	Filed string `json:"filed"`
+	Frame string `json:"frame"`
+}
+
+const shortForm = "2006-01-02"
+
+type USDArray []USD
+
+func (a USDArray) Len() int {
+	return len(a)
+}
+
+func (a USDArray) Swap(i, j int) {
+	tmp := i
+	a[i] = a[j]
+	a[j] = a[tmp]
+}
+
+func (a USDArray) Less(i, j int) bool {
+	t1, err := time.Parse(shortForm, a[i].Filed)
+	if err != nil {
+		log.Fatal(err)
+	}
+	t2, err := time.Parse(shortForm, a[j].Filed)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return t1.Before(t2)
+}
+
+type EUR struct {
+	Start string `json:"start"`
+	End   string `json:"end"`
+	Val   int64  `json:"val"`
+	Accn  string `json:"accn"`
+	FY    int    `json:"fy"`
+	FP    string `json:"fp"`
+	Form  string `json:"form"`
+	Filed string `json:"filed"`
+	Frame string `json:"frame"`
+}
+
+type EURArray []EUR
+
+func (a EURArray) Len() int {
+	return len(a)
+}
+
+func (a EURArray) Swap(i, j int) {
+	tmp := i
+	a[i] = a[j]
+	a[j] = a[tmp]
+}
+
+func (a EURArray) Less(i, j int) bool {
+	t1, err := time.Parse(shortForm, a[i].Filed)
+	if err != nil {
+		log.Fatal(err)
+	}
+	t2, err := time.Parse(shortForm, a[j].Filed)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return t1.Before(t2)
+}
+
+type BRL struct {
+	Start string `json:"start"`
+	End   string `json:"end"`
+	Val   int64  `json:"val"`
+	Accn  string `json:"accn"`
+	FY    int    `json:"fy"`
+	FP    string `json:"fp"`
+	Form  string `json:"form"`
+	Filed string `json:"filed"`
+	Frame string `json:"frame"`
+}
+
+type BRLArray []BRL
+
+func (a BRLArray) Len() int {
+	return len(a)
+}
+
+func (a BRLArray) Swap(i, j int) {
+	tmp := i
+	a[i] = a[j]
+	a[j] = a[tmp]
+}
+
+func (a BRLArray) Less(i, j int) bool {
+	t1, err := time.Parse(shortForm, a[i].Filed)
+	if err != nil {
+		log.Fatal(err)
+	}
+	t2, err := time.Parse(shortForm, a[j].Filed)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return t1.Before(t2)
+}
+
+type Acre struct {
+	End   string `json:"end"`
+	Val   int64  `json:"val"`
+	Accn  string `json:"accn"`
+	FY    int    `json:"fy"`
+	FP    string `json:"fp"`
+	Form  string `json:"form"`
+	Filed string `json:"filed"`
+	Frame string `json:"frame"`
+}
+
+type AcreArray []Acre
+
+type Shares struct {
+	Start string `json:"start"`
+	End   string `json:"end"`
+	Val   int64  `json:"val"`
+	Accn  string `json:"accn"`
+	FY    int    `json:"fy"`
+	FP    string `json:"fp"`
+	Form  string `json:"form"`
+	Filed string `json:"filed"`
+	Frame string `json:"frame"`
+}
+
+type SharesArray []Shares
