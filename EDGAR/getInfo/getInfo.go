@@ -169,31 +169,54 @@ func getCol(alpha_idx int, row_idx int) string {
 }
 
 // TODO
+func sortByFilingDates(con *CompanyConcept) {
+	if len(con.Units.USD) > 0 {
+		sort.Sort(USDArray(con.Units.USD))
+	}
+}
+
+// TODO
 func printConcept(con *CompanyConcept, f *excelize.File, filename string, rowIter int) (int, error) {
 	axis := ""
 	var err error
 	if len(con.Units.USD) > 0 {
+		// sort metrics by the filing date of the filing
+		//sortByFilingDates(con)
+
+		// print concept type
+		//f.SetCellValue("Sheet1", axis, con.Tag)
+
+		rowIter++
+		len_USD := len(con.Units.USD)
 		// print out the form type
-		for i := 0; i < len(con.Units.USD); i++ {
+		for i := 0; i < len_USD; i++ {
 			axis = getCol(i, rowIter)
 			f.SetCellValue("Sheet1", axis, con.Units.USD[i].Form)
-			fmt.Println("Axis: ", axis)
+			//fmt.Println("Axis: ", axis)
 		}
 		// go to the next row
 		rowIter++
 		axis = incrRow(rowIter)
 		// print out the date range
-		for i := 0; i < len(con.Units.USD); i++ {
+		for i := 0; i < len_USD; i++ {
 			axis = getCol(i, rowIter)
 			date_range := con.Units.USD[i].Start + " - " + con.Units.USD[i].End
 			f.SetCellValue("Sheet1", axis, date_range)
-			fmt.Println("Axis: ", axis)
+			//fmt.Println("Axis: ", axis)
+		}
+		// go to the next row
+		rowIter++
+		axis = incrRow(rowIter)
+		// print out filing date
+		for i := 0; i < len_USD; i++ {
+			axis = getCol(i, rowIter)
+			f.SetCellValue("Sheet1", axis, con.Units.USD[i].Filed)
 		}
 		// go to the next row
 		rowIter++
 		axis = incrRow(rowIter)
 		// print out the values
-		for i := 0; i < len(con.Units.USD); i++ {
+		for i := 0; i < len_USD; i++ {
 			axis = getCol(i, rowIter)
 			f.SetCellValue("Sheet1", axis, con.Units.USD[i].Val)
 		}
