@@ -116,11 +116,21 @@ func ListOfConcepts(facts *CompanyFacts) ([]string, error) {
 
 	if strings.Compare(accounting, "us-gaap") == 0 {
 		for k := range facts.Facts.UsGAAP {
-			ret = append(ret, k)
+			str := fmt.Sprintf("%v", facts.Facts.UsGAAP[k])
+			if strings.Contains(str, "Deprecated") {
+				ret = append(ret, k+"_DEPRECATED")
+			} else {
+				ret = append(ret, k)
+			}
 		}
 	} else if strings.Compare(accounting, "ifrs-full") == 0 {
 		for k := range facts.Facts.IFRSFull {
-			ret = append(ret, k)
+			str := fmt.Sprintf("%v", facts.Facts.IFRSFull[k])
+			if strings.Contains(str, "Deprecated") {
+				ret = append(ret, k+"_DEPRECATED")
+			} else {
+				ret = append(ret, k)
+			}
 		}
 	}
 
@@ -178,26 +188,26 @@ func sortByFilingDates(con *CompanyConcept) {
 // TODO
 func printConcept(con *CompanyConcept, f *excelize.File, filename string, rowIter int) (int, error) {
 	axis := ""
-	//var used = make(map[string]bool)
 	var err error
-	if len(con.Units.USD) > 0 {
-		// sort metrics by the filing date of the filing
-		//sortByFilingDates(con)
 
+	if len(con.Units.USD) > 0 {
 		// print concept type
-		//f.SetCellValue("Sheet1", axis, con.Tag)
+		axis = getCol(0, rowIter)
+		f.SetCellValue("Sheet1", axis, con.Tag)
 
 		rowIter++
 		len_USD := len(con.Units.USD)
+
 		// print out the frame
 		for i := 0; i < len_USD; i++ {
 			axis = getCol(i, rowIter)
 			f.SetCellValue("Sheet1", axis, con.Units.USD[i].Frame)
-			//fmt.Println("Axis: ", axis)
 		}
+
 		// go to the next row
 		rowIter++
 		axis = incrRow(rowIter)
+
 		// print out the date range
 		for i := 0; i < len_USD; i++ {
 			axis = getCol(i, rowIter)
@@ -205,11 +215,12 @@ func printConcept(con *CompanyConcept, f *excelize.File, filename string, rowIte
 			if strings.Compare(con.Units.USD[i].Frame, "") != 0 {
 				f.SetCellValue("Sheet1", axis, date_range)
 			}
-			//fmt.Println("Axis: ", axis)
 		}
+
 		// go to the next row
 		rowIter++
 		axis = incrRow(rowIter)
+
 		// print out filing date
 		for i := 0; i < len_USD; i++ {
 			axis = getCol(i, rowIter)
@@ -217,9 +228,11 @@ func printConcept(con *CompanyConcept, f *excelize.File, filename string, rowIte
 				f.SetCellValue("Sheet1", axis, con.Units.USD[i].Filed)
 			}
 		}
+
 		// go to the next row
 		rowIter++
 		axis = incrRow(rowIter)
+
 		// print out the values
 		for i := 0; i < len_USD; i++ {
 			axis = getCol(i, rowIter)
@@ -248,22 +261,16 @@ func printConcept(con *CompanyConcept, f *excelize.File, filename string, rowIte
 }
 
 // build a report with multiple concepts
-func BuildCombinedReport(facts *CompanyFacts, concepts []string) error {
-	var filename string
+func BuildCombinedReport(ticker string, facts *CompanyFacts, concepts []string) error {
+	var filename = ticker + "_"
 	for _, concept := range concepts {
 		filename = filename + concept
 	}
 	filename = filename + "Report.xlsx"
-	/*
-		f, err := os.Create(filename + "Report.txt")
-		if err != nil {
-			return err
-		}
-		defer f.Close()
-	*/
 
 	excelFile := excelize.NewFile()
 	rowIter := 0
+
 	for _, concept := range concepts {
 		con, err := GetConcept(facts, concept)
 		if err != nil {
