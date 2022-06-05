@@ -150,6 +150,7 @@ func (a USDArray) Less(i, j int) bool {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	t2, err := time.Parse(shortForm, a[j].Filed)
 	if err != nil {
 		log.Fatal(err)
@@ -186,6 +187,7 @@ func (a EURArray) Less(i, j int) bool {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	t2, err := time.Parse(shortForm, a[j].Filed)
 	if err != nil {
 		log.Fatal(err)
@@ -222,6 +224,7 @@ func (a BRLArray) Less(i, j int) bool {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	t2, err := time.Parse(shortForm, a[j].Filed)
 	if err != nil {
 		log.Fatal(err)
@@ -242,6 +245,29 @@ type Acre struct {
 
 type AcreArray []Acre
 
+func (a AcreArray) Len() int {
+	return len(a)
+}
+
+func (a AcreArray) Swap(i, j int) {
+	tmp := i
+	a[i] = a[j]
+	a[j] = a[tmp]
+}
+
+func (a AcreArray) Less(i, j int) bool {
+	t1, err := time.Parse(shortForm, a[i].Filed)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	t2, err := time.Parse(shortForm, a[j].Filed)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return t1.Before(t2)
+}
+
 type Shares struct {
 	Start string `json:"start"`
 	End   string `json:"end"`
@@ -255,3 +281,26 @@ type Shares struct {
 }
 
 type SharesArray []Shares
+
+func (a SharesArray) Len() int {
+	return len(a)
+}
+
+func (a SharesArray) Swap(i, j int) {
+	tmp := i
+	a[i] = a[j]
+	a[j] = a[tmp]
+}
+
+func (a SharesArray) Less(i, j int) bool {
+	t1, err := time.Parse(shortForm, a[i].Filed)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	t2, err := time.Parse(shortForm, a[j].Filed)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return t1.Before(t2)
+}
