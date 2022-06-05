@@ -118,7 +118,7 @@ func ListOfConcepts(facts *CompanyFacts) ([]string, error) {
 		for k := range facts.Facts.UsGAAP {
 			str := fmt.Sprintf("%v", facts.Facts.UsGAAP[k])
 			if strings.Contains(str, "Deprecated") {
-				ret = append(ret, k+"_DEPRECATED")
+				ret = append(ret, k+"_DEPRECATED"+" -- "+str)
 			} else {
 				ret = append(ret, k)
 			}
@@ -127,7 +127,7 @@ func ListOfConcepts(facts *CompanyFacts) ([]string, error) {
 		for k := range facts.Facts.IFRSFull {
 			str := fmt.Sprintf("%v", facts.Facts.IFRSFull[k])
 			if strings.Contains(str, "Deprecated") {
-				ret = append(ret, k+"_DEPRECATED")
+				ret = append(ret, k+"_DEPRECATED"+" -- "+str)
 			} else {
 				ret = append(ret, k)
 			}
@@ -186,9 +186,18 @@ func sortByFilingDates(con *CompanyConcept) {
 }
 
 // TODO
+func printUnit(unit interface{}, row *int) {
+	switch unit.(type) {
+	case USD:
+
+	}
+}
+
+// TODO
 func printConcept(con *CompanyConcept, f *excelize.File, filename string, rowIter int) (int, error) {
 	axis := ""
 	var err error
+	var used = make(map[string]bool)
 
 	if len(con.Units.USD) > 0 {
 		// print concept type
@@ -198,48 +207,61 @@ func printConcept(con *CompanyConcept, f *excelize.File, filename string, rowIte
 		rowIter++
 		len_USD := len(con.Units.USD)
 
-		// print out the frame
+		/** TODO **/
+		// try to wrap print into a single function
+		// print when "used" is false
 		for i := 0; i < len_USD; i++ {
-			axis = getCol(i, rowIter)
-			f.SetCellValue("Sheet1", axis, con.Units.USD[i].Frame)
-		}
-
-		// go to the next row
-		rowIter++
-		axis = incrRow(rowIter)
-
-		// print out the date range
-		for i := 0; i < len_USD; i++ {
-			axis = getCol(i, rowIter)
 			date_range := con.Units.USD[i].Start + " - " + con.Units.USD[i].End
-			if strings.Compare(con.Units.USD[i].Frame, "") != 0 {
-				f.SetCellValue("Sheet1", axis, date_range)
+			if !used[date_range] {
+				used[date_range] = true
+				printUnit(con.Units.USD[i], &rowIter)
 			}
 		}
 
-		// go to the next row
-		rowIter++
-		axis = incrRow(rowIter)
-
-		// print out filing date
-		for i := 0; i < len_USD; i++ {
-			axis = getCol(i, rowIter)
-			if strings.Compare(con.Units.USD[i].Frame, "") != 0 {
-				f.SetCellValue("Sheet1", axis, con.Units.USD[i].Filed)
+		/*
+			// print out the frame
+			for i := 0; i < len_USD; i++ {
+				axis = getCol(i, rowIter)
+				f.SetCellValue("Sheet1", axis, con.Units.USD[i].Frame)
 			}
-		}
 
-		// go to the next row
-		rowIter++
-		axis = incrRow(rowIter)
+			// go to the next row
+			rowIter++
+			axis = incrRow(rowIter)
 
-		// print out the values
-		for i := 0; i < len_USD; i++ {
-			axis = getCol(i, rowIter)
-			if strings.Compare(con.Units.USD[i].Frame, "") != 0 {
-				f.SetCellValue("Sheet1", axis, con.Units.USD[i].Val)
+			// print out the date range
+			for i := 0; i < len_USD; i++ {
+				axis = getCol(i, rowIter)
+				date_range := con.Units.USD[i].Start + " - " + con.Units.USD[i].End
+				if strings.Compare(con.Units.USD[i].Frame, "") != 0 {
+					f.SetCellValue("Sheet1", axis, date_range)
+				}
 			}
-		}
+
+			// go to the next row
+			rowIter++
+			axis = incrRow(rowIter)
+
+			// print out filing date
+			for i := 0; i < len_USD; i++ {
+				axis = getCol(i, rowIter)
+				if strings.Compare(con.Units.USD[i].Frame, "") != 0 {
+					f.SetCellValue("Sheet1", axis, con.Units.USD[i].Filed)
+				}
+			}
+
+			// go to the next row
+			rowIter++
+			axis = incrRow(rowIter)
+
+			// print out the values
+			for i := 0; i < len_USD; i++ {
+				axis = getCol(i, rowIter)
+				if strings.Compare(con.Units.USD[i].Frame, "") != 0 {
+					f.SetCellValue("Sheet1", axis, con.Units.USD[i].Val)
+				}
+			}
+		*/
 	} else if len(con.Units.EUR) > 0 {
 
 	} else if len(con.Units.BRL) > 0 {
@@ -293,14 +315,6 @@ func BuildReport(facts *CompanyFacts, concept string) error {
 	}
 
 	filename := concept + "Report.xlsx"
-	/*
-		f, err := os.Create(concept + "Report.txt")
-		if err != nil {
-			return err
-		}
-		defer f.Close()
-	*/
-
 	excelFile := excelize.NewFile()
 	_, err = printConcept(con, excelFile, filename, 0)
 	if err != nil {
